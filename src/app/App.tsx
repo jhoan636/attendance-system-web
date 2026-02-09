@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AppState, User, AttendanceSession } from '@/types';
-import { database } from '@/lib/database';
+import { database, ApiErrorWithFields } from '@/lib/database';
 import { IDEntryScreen } from '@/app/components/IDEntryScreen';
 import { ProfileLoadedScreen } from '@/app/components/ProfileLoadedScreen';
 import { RegistrationScreen } from '@/app/components/RegistrationScreen';
@@ -67,13 +67,7 @@ export default function App() {
   };
 
   // Handle new user registration
-
 const handleRegistration = async (userData: Omit<User, 'createdAt'>) => {
-  setIsLoading(true);
-
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
   try {
     const newUser: User = {
       ...userData,
@@ -90,11 +84,16 @@ const handleRegistration = async (userData: Omit<User, 'createdAt'>) => {
     });
   } catch (error: any) {
     console.error('Error registering user:', error);
-    // Changed: show admin modal with backend message if available
+    
+    // Si es un ApiErrorWithFields, dejamos que RegistrationScreen lo maneje
+    // Re-lanzamos la excepción para que RegistrationScreen la capture
+    if (error instanceof ApiErrorWithFields) {
+      throw error;
+    }
+    
+    // Para otros errores, mostramos el modal genérico
     setAdminModalMessage(error?.message ?? 'Error al registrar usuario. Contactar al administrador.');
     setShowAdminModal(true);
-  } finally {
-    setIsLoading(false);
   }
 };
 

@@ -23,27 +23,35 @@ export function ConfirmationScreen({ session, onNewEntry }: ConfirmationScreenPr
           className="text-center mb-8"
         >
           <div className="relative inline-block">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-              className="w-24 h-24 bg-green-600 rounded-full flex items-center justify-center shadow-2xl shadow-green-600/40 relative"
-            >
-              <CheckCircle2 className="w-12 h-12 text-white" />
-              {/* Pulse rings */}
-              <motion.div
-                initial={{ scale: 1, opacity: 0.5 }}
-                animate={{ scale: 1.5, opacity: 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute inset-0 bg-green-400 rounded-full"
-              />
-              <motion.div
-                initial={{ scale: 1, opacity: 0.5 }}
-                animate={{ scale: 1.8, opacity: 0 }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-                className="absolute inset-0 bg-green-400 rounded-full"
-              />
-            </motion.div>
+            {/* user-provided animation: ball style + motion */}
+            {(() => {
+              const ball: React.CSSProperties = {
+                width: 96,
+                height: 96,
+                borderRadius: 9999,
+                background: 'linear-gradient(to right,#16a34a,#16a34a,#15803d)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 18px 30px rgba(0, 0, 0, 0.31)'
+              };
+
+              return (
+                <motion.div
+                  style={ball}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    duration: 0.8,
+                    delay: 0.5,
+                    ease: [0, 0.71, 0.2, 1.01]
+                  }}
+                  className="relative"
+                >
+                  <CheckCircle2 className="w-12 h-12 text-white" />
+                </motion.div>
+              );
+            })()}
           </div>
           <motion.h1
             initial={{ opacity: 0 }}

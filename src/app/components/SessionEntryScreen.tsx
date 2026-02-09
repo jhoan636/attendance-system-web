@@ -13,8 +13,9 @@ interface SessionEntryScreenProps {
     estimatedHours: number;
     authorization: boolean;
     comments?: string;
-  }) => void;
+  }) => Promise<void>;
 }
+
 
 export function SessionEntryScreen({ user, onSubmit }: SessionEntryScreenProps) {
   const [formData, setFormData] = useState({
@@ -70,15 +71,18 @@ export function SessionEntryScreen({ user, onSubmit }: SessionEntryScreenProps) 
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    const nationalId = user.nationalId || user.cedula || '';
-    const serviceTypeId = Number(formData.serviceTypeId);
-    const accompanimentCourseId = formData.accompanimentCourseId ? Number(formData.accompanimentCourseId) : undefined;
+  const nationalId = user.nationalId || user.cedula || '';
+  const serviceTypeId = Number(formData.serviceTypeId);
+  const accompanimentCourseId = formData.accompanimentCourseId
+    ? Number(formData.accompanimentCourseId)
+    : undefined;
 
-    onSubmit({
+  try {
+    await onSubmit({
       nationalId,
       serviceTypeId,
       accompanimentCourseId,
@@ -86,7 +90,19 @@ export function SessionEntryScreen({ user, onSubmit }: SessionEntryScreenProps) 
       authorization: Boolean(formData.authorization),
       comments: formData.comments.trim() || undefined
     });
-  };
+  } catch (error: any) {
+    if (error?.fieldErrors) {
+      setErrors(prev => ({
+        ...prev,
+        ...error.fieldErrors
+      }));
+      return;
+    }
+    setErrors({});
+    alert(error?.message || 'Error al registrar la sesión');
+  }
+};
+
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -184,8 +200,6 @@ export function SessionEntryScreen({ user, onSubmit }: SessionEntryScreenProps) 
                 onChange={(e) => handleInputChange('estimatedHours', e.target.value)}
                 placeholder="ej., 2, 1.5, 3"
                 step="0.5"
-                min="0.5"
-                max="24"
                 className={`w-full px-4 py-3 bg-slate-50 border-2 rounded-lg transition-all outline-none ${
                   errors.estimatedHours ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-green-500'
                 }`}

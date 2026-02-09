@@ -8,13 +8,14 @@ import {
   Users,
   ArrowRight,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { UserRole, User as UserType } from "@/types";
-import { database } from '@/lib/database';
+import { database, ApiErrorWithFields } from '@/lib/database';
 
 interface RegistrationScreenProps {
   cedula: string;
-  onRegister: (user: Omit<UserType, "createdAt">) => void;
+  onRegister: (user: Omit<UserType, "createdAt">) => Promise<void>; 
 }
 
 export function RegistrationScreen({
@@ -40,6 +41,8 @@ export function RegistrationScreen({
   const [errors, setErrors] = useState<Record<string, string>>(
     {},
   );
+  const [serverError, setServerError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const roles: {
     value: UserRole;
@@ -165,13 +168,28 @@ export function RegistrationScreen({
       newErrors.roleAccessCode = "El código de acceso es requerido";
     }
 
+    // Additional check to ensure semester is a valid integer between 1 and 10 if provided
+    const sem = Number(formData.semester.trim());
+    if ((selectedRole === "Estudiante" || selectedRole === "Monitor") && formData.semester.trim()) {
+      if (!Number.isInteger(sem)) {
+        newErrors.semester = "El semestre debe ser un número entero";
+      } else if (sem < 1 || sem > 10) {
+        newErrors.semester = "El semestre debe estar entre 1 y 10";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+
+
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRole || !validateForm()) return;
+
+    setServerError("");
+    setIsSubmitting(true);
 
     const user: Omit<UserType, "createdAt"> = {
       cedula,
@@ -189,8 +207,38 @@ export function RegistrationScreen({
         : {}),
     };
 
+    try {
+      await onRegister(user);
+    } catch (error: any) {
+      console.error('Error registering user:', error);
+      
+      // Mapear ciertas propiedades del backend al frontend
+      const fieldMapping: Record<string, string> = {
+        'nationalId': 'cedula',
+        'academicProgramId': 'academicProgramId',
+        'campusId': 'campusId',
+        'firstName': 'firstName',
+        'lastName': 'lastName',
+        'email': 'email',
+        'phone': 'phone',
+        'semester': 'semester',
+        'roleAccessCode': 'roleAccessCode'
+      };
 
-    onRegister(user);
+      if (error instanceof ApiErrorWithFields && error.fieldErrors) {
+        const mappedErrors: Record<string, string> = {};
+        for (const [field, message] of Object.entries(error.fieldErrors)) {
+          const mappedField = fieldMapping[field] || field;
+          mappedErrors[mappedField] = message;
+        }
+        setErrors(mappedErrors);
+        setServerError("Por favor corrige los errores en el formulario");
+      } else {
+        setServerError(error?.message ?? "Error al registrar usuario. Contactar al administrador.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -295,6 +343,21 @@ export function RegistrationScreen({
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 space-y-6"
         >
+          {/* Server Error Alert */}
+          {serverError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex gap-3"
+            >
+              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-800 font-bold text-sm mb-1">Error</p>
+                <p className="text-red-700 text-sm">{serverError}</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Personal Information */}
           <div>
             <h3 className="text-sm text-slate-500 uppercase tracking-wide mb-4">
@@ -494,7 +557,6 @@ export function RegistrationScreen({
                   value={formData.semester}
                   onChange={(e) => handleInputChange('semester', e.target.value.replace(/\D/g, ''))}
                   placeholder="ej., 3"
-                  min={1}
                   className={`w-full px-4 py-3 bg-slate-50 border-2 rounded-lg transition-all outline-none ${errors.semester ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-green-500'
                     }`}
                 />
@@ -533,10 +595,24 @@ export function RegistrationScreen({
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-green-600 hover:bg-blue-700 text-white py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30"
+            disabled={isSubmitting}
+            className={`w-full py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-white font-medium ${
+              isSubmitting
+                ? 'bg-slate-400 cursor-not-allowed shadow-slate-400/20'
+                : 'bg-green-600 hover:bg-blue-700 shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30'
+            }`}
           >
-            Completar Registro
-            <ArrowRight className="w-5 h-5" />
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Registrando...
+              </>
+            ) : (
+              <>
+                Completar Registro
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
           </button>
         </form>
       </motion.div>

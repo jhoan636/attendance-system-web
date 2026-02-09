@@ -2,6 +2,16 @@ import { User, AttendanceSession } from '@/types';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '';
 
+export class ApiErrorWithFields extends Error {
+  constructor(
+    message: string,
+    public fieldErrors?: Record<string, string>
+  ) {
+    super(message);
+    this.name = 'ApiErrorWithFields';
+  }
+}
+
 async function handleJsonResponse<T>(res: Response): Promise<T> {
   const contentType = res.headers.get('content-type') || '';
   const text = await res.text();
@@ -11,8 +21,19 @@ async function handleJsonResponse<T>(res: Response): Promise<T> {
     try {
       const parsed = JSON.parse(text);
       const msg = parsed && (parsed.message || parsed.error || parsed.msg) ? (parsed.message || parsed.error || parsed.msg) : text;
+      
+      // Si hay fieldErrors, lanzar una excepción especial que los incluya
+      if (parsed.fieldErrors && typeof parsed.fieldErrors === 'object') {
+        throw new ApiErrorWithFields(msg, parsed.fieldErrors);
+      }
+      
       throw new Error(msg);
     } catch (e) {
+      // Si ya es un Error procesado (ApiErrorWithFields o Error con mensaje extraído), relanzarlo tal cual
+      if (e instanceof ApiErrorWithFields || e instanceof Error) {
+        throw e;
+      }
+      // Solo relanzar el JSON completo si hubo otro tipo de excepción
       throw new Error(text);
     }
   }
