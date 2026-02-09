@@ -160,9 +160,9 @@ export function RegistrationScreen({
       newErrors.semester = "El semestre debe ser un número entero";
     }
 
-    // Role access code required for Profesor, Monitor, Estudiante
+    // Role access code required for Profesor, Monitor (not for Invitado)
     if (
-      (selectedRole === "Profesor" || selectedRole === "Monitor" || selectedRole === "Invitado") &&
+      (selectedRole === "Profesor" || selectedRole === "Monitor") &&
       !formData.roleAccessCode.trim()
     ) {
       newErrors.roleAccessCode = "El código de acceso es requerido";
@@ -201,7 +201,9 @@ export function RegistrationScreen({
       ...(formData.academicProgramId ? { academicProgramId: formData.academicProgramId } : {}),
       ...(formData.campusId ? { campusId: formData.campusId } : {}),
       ...(formData.semester ? { semester: formData.semester.trim() } : {}),
-      ...(formData.roleAccessCode ? { roleAccessCode: formData.roleAccessCode.trim() } : {}),
+      ...(selectedRole === "Invitado" 
+        ? { roleAccessCode: "INV-2026" }
+        : formData.roleAccessCode ? { roleAccessCode: formData.roleAccessCode.trim() } : {}),
       ...((selectedRole === "Estudiante" || selectedRole === "Monitor") && formData.semester
         ? { semester: Number(formData.semester.trim()) }
         : {}),
@@ -568,11 +570,11 @@ export function RegistrationScreen({
               </div>
             )}
 
-            {/* Role access code for certain roles */}
-            {(selectedRole === 'Profesor' || selectedRole === 'Monitor' || selectedRole === 'Invitado') && (
+            {/* Role access code for certain roles (not for Invitado) */}
+            {(selectedRole === 'Profesor' || selectedRole === 'Monitor') && (
               <div className="mt-4">
                 <label htmlFor="roleAccessCode" className="block text-sm text-slate-700 mb-2">
-                  Código de Acceso {(selectedRole === 'Profesor' || selectedRole === 'Monitor' || selectedRole === 'Invitado') && <span className="text-red-500">*</span>}
+                  Código de Acceso <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="roleAccessCode"
