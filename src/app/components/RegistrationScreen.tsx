@@ -15,7 +15,7 @@ import { database, ApiErrorWithFields } from '@/lib/database';
 
 interface RegistrationScreenProps {
   cedula: string;
-  onRegister: (user: Omit<UserType, "createdAt">) => Promise<void>; 
+  onRegister: (user: Omit<UserType, "createdAt">) => Promise<void>;
 }
 
 export function RegistrationScreen({
@@ -201,7 +201,7 @@ export function RegistrationScreen({
       ...(formData.academicProgramId ? { academicProgramId: formData.academicProgramId } : {}),
       ...(formData.campusId ? { campusId: formData.campusId } : {}),
       ...(formData.semester ? { semester: formData.semester.trim() } : {}),
-      ...(selectedRole === "Invitado" 
+      ...(selectedRole === "Invitado"
         ? { roleAccessCode: "INV-2026" }
         : formData.roleAccessCode ? { roleAccessCode: formData.roleAccessCode.trim() } : {}),
       ...((selectedRole === "Estudiante" || selectedRole === "Monitor") && formData.semester
@@ -213,7 +213,7 @@ export function RegistrationScreen({
       await onRegister(user);
     } catch (error: any) {
       console.error('Error registering user:', error);
-      
+
       // Mapear ciertas propiedades del backend al frontend
       const fieldMapping: Record<string, string> = {
         'nationalId': 'cedula',
@@ -371,7 +371,7 @@ export function RegistrationScreen({
                   htmlFor="firstName"
                   className="block text-sm text-slate-700 mb-2"
                 >
-                  Nombre <span className="text-red-500">*</span>
+                  Nombres <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -401,7 +401,7 @@ export function RegistrationScreen({
                   htmlFor="lastName"
                   className="block text-sm text-slate-700 mb-2"
                 >
-                  Apellido{" "}
+                  Apellidos{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -440,13 +440,15 @@ export function RegistrationScreen({
                   htmlFor="email"
                   className="block text-sm text-slate-700 mb-2"
                 >
-                  Correo Electrónico{" "}
+                  Correo Institucional{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   id="email"
                   value={formData.email}
+                  placeholder="ej., usuario@elpoli.edu.co"
+
                   onChange={(e) =>
                     handleInputChange("email", e.target.value)
                   }
@@ -598,11 +600,10 @@ export function RegistrationScreen({
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-white font-medium ${
-              isSubmitting
+            className={`w-full py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-white font-medium ${isSubmitting
                 ? 'bg-slate-400 cursor-not-allowed shadow-slate-400/20'
                 : 'bg-green-600 hover:bg-blue-700 shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30'
-            }`}
+              }`}
           >
             {isSubmitting ? (
               <>
