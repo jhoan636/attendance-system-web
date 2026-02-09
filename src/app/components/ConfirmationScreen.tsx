@@ -205,16 +205,6 @@ export function ConfirmationScreen({ session, onNewEntry }: ConfirmationScreenPr
             </button>
           </div>
         </motion.div>
-
-        {/* Footer */}
-        <p className="text-center text-slate-500 text-xs mt-6">
-          Sesión registrada el {new Date().toLocaleDateString('es-ES', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </p>
       </motion.div>
     </div>
   );

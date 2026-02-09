@@ -90,4 +90,7 @@
       "esbuild"
     ]
   }
+  ,
+  "author": "Jhoan Londoño Escobar",
+  "copyright": "© 2026 Jhoan Londoño Escobar"
 }

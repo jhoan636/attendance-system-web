@@ -17,7 +17,6 @@ For example:
 * Refactor code as you go to keep code clean
 * Keep file sizes small and put helper functions and components in their own files.
 
---------------
 
 # Design system guidelines
 Rules for how the AI should make generations look like your company's design system
@@ -58,4 +57,4 @@ or initiating processes. They communicate interactivity and should have clear, a
   * Purpose : Used for the least important actions
   * Visual Style : Text-only with no border, using primary color
   * Usage : For actions that should be available but not emphasized
--->
+© 2026 Jhoan Londoño Escobar. Todos los derechos reservados.

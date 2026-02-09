@@ -9,3 +9,6 @@
 
   Run `npm run dev` to start the development server.
   
+---
+
+© 2026 Jhoan Londoño Escobar. Todos los derechos reservados.
